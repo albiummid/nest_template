@@ -1,0 +1,7 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "unusedImports": "warn",
+  "unusedExports": "warn",
+  "formatOnSave": true
+}
