@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { ENV } from '../../config/env';
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
@@ -50,7 +52,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
       method: request.method,
       timestamp: new Date().toISOString(),
       errors: errors,
-      stack: exception instanceof Error ? exception.stack : exception,
+      stack:
+        ENV.NODE_ENV === 'development'
+          ? exception instanceof Error
+            ? exception.stack
+            : exception
+          : undefined,
     };
 
     response.status(status).send(errorResponse);
