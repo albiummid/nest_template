@@ -37,6 +37,11 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('OfficeDesk')
     .addServer(`http://localhost:${ENV.PORT}/api`)
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
@@ -51,16 +56,21 @@ async function bootstrap() {
   );
 
   /* -------------------- Fastify plugins -------------------- */
-  await app.register(fastifyCors, {
-    origin: true, // better than '*'
+  await app.register(fastifyCors as any, {
+    origin:
+      ENV.NODE_ENV === 'development'
+        ? true
+        : [
+            /* specify origins */
+          ],
     credentials: true,
   });
 
-  await app.register(fastifyHelmet);
+  await app.register(fastifyHelmet as any);
 
-  await app.register(fastifyCookie);
+  await app.register(fastifyCookie as any);
 
-  await app.register(fastifyMultipart, {
+  await app.register(fastifyMultipart as any, {
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB
     },
