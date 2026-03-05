@@ -1,3 +1,9 @@
+import { SuccessResponse } from '@/common/controllers/base.controller';
+import { PrivateController } from '@/common/controllers/private.controller';
+import {
+  ApiPaginatedResponse,
+  ApiSuccessResponse,
+} from '@/common/decorators/api-response.decorator';
 import {
   Body,
   Controller,
@@ -10,12 +16,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiConsumes, ApiProduces, ApiTags } from '@nestjs/swagger';
-import { SuccessResponse } from 'src/common/controllers/base.controller';
-import { PrivateController } from 'src/common/controllers/private.controller';
-import {
-  ApiPaginatedResponse,
-  ApiSuccessResponse,
-} from 'src/common/decorators/api-response.decorator';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { UpdateUserBasicInfoDto } from './dto/update-user-basic-info.dto';
 import { UserEntity } from './entities/user.entity';
