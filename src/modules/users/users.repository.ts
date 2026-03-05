@@ -1,7 +1,7 @@
+import { ListResponse } from '@/common/interfaces/response.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginateRaw } from 'nestjs-typeorm-paginate';
-import { ListResponse } from 'src/common/interfaces/response.interface';
 import { Repository } from 'typeorm';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { UserEntity } from './entities/user.entity';
@@ -21,14 +21,14 @@ export class UsersRepository extends Repository<UserEntity> {
     const exactMatchKeys: string[] = ['email', 'role'];
     const paginationKeys: string[] = ['page', 'limit', 'sort_by', 'sort_order'];
     const queryBuilder = this.repository.createQueryBuilder(key);
-    Object.keys(filters).forEach((key) => {
-      if (excludeKeys.includes(key) || paginationKeys.includes(key)) return;
-      if (exactMatchKeys.includes(key))
-        return queryBuilder.andWhere(`${key} = :${key}`, {
-          [key]: filters[key],
+    Object.keys(filters).forEach((k) => {
+      if (excludeKeys.includes(k) || paginationKeys.includes(k)) return;
+      if (exactMatchKeys.includes(k))
+        return queryBuilder.andWhere(`${k} = :${k}`, {
+          [k]: (filters as any)[k],
         });
-      return queryBuilder.andWhere(`${key} LIKE :${key}`, {
-        [key]: `%${filters[key]}%`,
+      return queryBuilder.andWhere(`${k} LIKE :${k}`, {
+        [k]: `%${(filters as any)[k]}%`,
       });
     });
 
