@@ -10,6 +10,8 @@ import { DatabaseModule } from '../database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
+import { RequestContextMiddleware } from '../common/middleware/request-context.middleware';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -34,6 +36,6 @@ import { UsersModule } from './users/users.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware, RequestContextMiddleware).forRoutes('*');
   }
 }
