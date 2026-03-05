@@ -1,7 +1,4 @@
-// IMPORTANT: load .env before anything else
-import 'dotenv/config';
-
-import { cleanEnv, port, str } from 'envalid';
+import { cleanEnv, num, port, str } from 'envalid';
 
 /**
  * Process-level immutable configuration.
@@ -32,8 +29,8 @@ export const ENV = cleanEnv(process.env, {
   JWT_EXPIRES_IN: str({ default: '1h' }),
 
   // Throttling
-  THROTTLE_TTL: port({ default: 60 }), // seconds
-  THROTTLE_LIMIT: port({ default: 10 }), // requests per TTL
+  THROTTLE_TTL: num({ default: 60 }), // seconds
+  THROTTLE_LIMIT: num({ default: 10 }), // requests per TTL
 
   // // Redis
   // REDIS_ENABLED: bool({ default: false }),
