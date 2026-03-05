@@ -1,9 +1,9 @@
+import { FilterCommonDto } from '@/common/dto/filter-common.dto';
+import { Role } from '@/common/utils/enums';
+import { enumToString, enumValuesToArray } from '@/common/utils/util/util';
+import { IsValueIn } from '@/common/utils/validators/is-value-in.validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
-import { FilterCommonDto } from 'src/common/dto/filter-common.dto';
-import { Role } from 'src/common/utils/enums';
-import { enumToString, enumValuesToArray } from 'src/common/utils/util/util';
-import { IsValueIn } from 'src/common/utils/validators/is-value-in.validator';
 
 export class FilterUserDto extends FilterCommonDto {
   @IsOptional()
