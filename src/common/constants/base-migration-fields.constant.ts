@@ -28,6 +28,7 @@ export const baseMigrationFields: TableColumnOptions[] = [
     name: 'deleted_at',
     type: 'datetime',
     default: null,
+    isNullable: true,
   },
   {
     name: 'created_by',
