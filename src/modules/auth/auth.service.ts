@@ -1,3 +1,5 @@
+import { SanitizedEntity } from '@/common/types/utils.types';
+import { Role } from '@/common/utils/enums';
 import {
   BadRequestException,
   Inject,
@@ -6,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { SanitizedEntity } from 'src/common/types/utils.types';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
@@ -54,10 +55,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { ...userWithoutPassword } = user;
-    delete (userWithoutPassword as any).password;
-
-    return userWithoutPassword;
+    return user;
   }
 
   /**
@@ -93,8 +91,23 @@ export class AuthService {
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
+      role: Role.EMPLOYEE,
     });
-    return this.login({ email: user.email, password: registerDto.password });
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
   }
 
   /**
