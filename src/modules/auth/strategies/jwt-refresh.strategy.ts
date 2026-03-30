@@ -1,9 +1,9 @@
 // auth/strategies/jwt-refresh.strategy.ts
+import { ENV } from '@/config/env';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 import { FastifyRequest } from 'fastify';
-import { ENV } from '@/config/env';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
 interface RefreshTokenPayload {
   sub: number;

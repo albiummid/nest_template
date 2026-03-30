@@ -1,5 +1,6 @@
 import { SanitizedEntity } from '@/common/types/utils.types';
 import { Role } from '@/common/utils/enums';
+import { ENV } from '@/config/env';
 import {
   BadRequestException,
   Inject,
@@ -8,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { ENV } from '@/config/env';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';

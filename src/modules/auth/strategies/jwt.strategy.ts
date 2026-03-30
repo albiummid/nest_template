@@ -1,9 +1,9 @@
 // auth/strategies/jwt.strategy.ts
+import { ENV } from '@/config/env';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
-import { ENV } from '@/config/env';
 
 interface JwtPayload {
   sub: number;
