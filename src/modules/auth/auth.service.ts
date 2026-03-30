@@ -8,15 +8,21 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ENV } from '@/config/env';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
-interface JwtPayload {
+interface RefreshTokenPayload {
   sub: number;
   email: string;
-  // you can add more fields: role, isActive, etc.
+  refreshTokenVersion: number;
+}
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
 }
 
 @Injectable()
@@ -59,18 +65,15 @@ export class AuthService {
   }
 
   /**
-   * Login method - returns JWT access token
+   * Login method - returns JWT access token and refresh token
    */
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-    };
+    const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      access_token: this.jwtService.sign(payload),
+      ...tokens,
       user: {
         id: user.id,
         email: user.email,
@@ -94,13 +97,10 @@ export class AuthService {
       role: Role.EMPLOYEE,
     });
 
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-    };
+    const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      access_token: this.jwtService.sign(payload),
+      ...tokens,
       user: {
         id: user.id,
         email: user.email,
@@ -108,6 +108,53 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  /**
+   * Generate access and refresh tokens
+   */
+  private async generateTokens(
+    userId: number,
+    email: string,
+  ): Promise<TokenPair> {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync({ sub: userId, email }),
+      this.jwtService.signAsync(
+        { sub: userId, email, refreshTokenVersion: Date.now() },
+        {
+          secret: ENV.JWT_REFRESH_SECRET,
+          expiresIn: '7d',
+        },
+      ),
+    ]);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  async refreshTokens(refreshToken: string): Promise<TokenPair> {
+    try {
+      const payload = this.jwtService.verify<RefreshTokenPayload>(
+        refreshToken,
+        {
+          secret: ENV.JWT_REFRESH_SECRET,
+        },
+      );
+
+      const user = await this.usersService.findUserById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      return await this.generateTokens(user.id, user.email);
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   /**

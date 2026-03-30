@@ -10,11 +10,23 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ENV } from '../../config/env';
 
+interface ErrorResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: null;
+  path: string;
+  method: string;
+  timestamp: string;
+  errors?: string[] | null;
+  stack?: string;
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
@@ -25,14 +37,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message = 'Internal server error';
-    let errors = null;
+    let errors: string[] | null = null;
 
     if (exception instanceof HttpException) {
-      const res = exception.getResponse() as any;
-      message = typeof res === 'object' ? res.message : res;
-      if (Array.isArray(res.message)) {
-        errors = res.message;
-        message = 'Validation failed';
+      const res = exception.getResponse();
+      if (typeof res === 'string') {
+        message = res;
+      } else if (typeof res === 'object' && res !== null) {
+        const responseObj = res as Record<string, unknown>;
+        if (Array.isArray(responseObj.message)) {
+          errors = responseObj.message as string[];
+          message = 'Validation failed';
+        } else {
+          message = String(responseObj.message);
+        }
       }
     } else if (exception instanceof Error) {
       message = exception.message;
@@ -43,7 +61,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
-    const errorResponse: any = {
+    const errorResponse: ErrorResponse = {
       success: false,
       statusCode: status,
       message,
@@ -53,10 +71,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       errors: errors,
       stack:
-        ENV.NODE_ENV === 'development'
-          ? exception instanceof Error
-            ? exception.stack
-            : exception
+        ENV.NODE_ENV === 'development' && exception instanceof Error
+          ? exception.stack
           : undefined,
     };
 

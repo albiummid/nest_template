@@ -8,12 +8,28 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+interface PaginatedResponse<T> {
+  items: T[];
+  meta: {
+    totalItems?: number;
+    itemCount?: number;
+    itemsPerPage?: number;
+    totalPages?: number;
+    currentPage?: number;
+  };
+}
+
+interface SuccessResponseData {
+  result?: unknown;
+  message?: string;
+}
+
 export interface Response<T> {
   success: boolean;
   statusCode: number;
   message: string;
   data: T;
-  meta?: any;
+  meta?: Record<string, unknown>;
   path: string;
   method: string;
   timestamp: string;
@@ -30,31 +46,34 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     const response = ctx.getResponse<FastifyReply>();
 
     return next.handle().pipe(
-      map((data) => {
+      map((data: unknown) => {
         const statusCode = response.statusCode;
 
         const responseData =
           data && typeof data === 'object' && 'result' in data
-            ? data.result
+            ? (data as SuccessResponseData).result
             : data;
         const message =
           data && typeof data === 'object' && 'message' in data
-            ? data.message
+            ? String((data as SuccessResponseData).message)
             : 'Success';
 
-        const isPaginated = !!(
+        const isPaginated =
           responseData &&
           typeof responseData === 'object' &&
           'items' in responseData &&
-          'meta' in responseData
-        );
+          'meta' in responseData;
 
         return {
           success: true,
           statusCode,
-          message: message as string,
-          data: (isPaginated ? responseData.items : responseData) as T,
-          meta: isPaginated ? responseData.meta : undefined,
+          message,
+          data: (isPaginated
+            ? (responseData as PaginatedResponse<T>).items
+            : responseData) as T,
+          meta: isPaginated
+            ? (responseData as PaginatedResponse<T>).meta
+            : undefined,
           path: request.url,
           method: request.method,
           timestamp: new Date().toISOString(),

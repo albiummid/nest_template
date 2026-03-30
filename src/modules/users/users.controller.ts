@@ -4,6 +4,7 @@ import {
   ApiPaginatedResponse,
   ApiSuccessResponse,
 } from '@/common/decorators/api-response.decorator';
+import { ListResponse } from '@/common/interfaces/response.interface';
 import {
   Body,
   Controller,
@@ -33,7 +34,7 @@ export class UsersController extends PrivateController {
   @HttpCode(200)
   async findAll(
     @Query() query: FilterUserDto,
-  ): Promise<SuccessResponse<UserEntity[]>> {
+  ): Promise<SuccessResponse<ListResponse<UserEntity>>> {
     const result = await this.usersService.findMany(query);
     return this.successResponse(result, 'Data fetched successfully');
   }

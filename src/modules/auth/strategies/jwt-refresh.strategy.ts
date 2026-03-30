@@ -5,6 +5,21 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { FastifyRequest } from 'fastify';
 import { ENV } from '@/config/env';
 
+interface RefreshTokenPayload {
+  sub: number;
+  email: string;
+  iat: number;
+  exp: number;
+}
+
+interface ValidatedRefreshToken {
+  sub: number;
+  email: string;
+  refreshToken: string;
+  iat: number;
+  exp: number;
+}
+
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
@@ -14,11 +29,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: FastifyRequest) => {
-          return (
-            request.cookies?.refreshToken ||
-            (request.body as any)?.refreshToken ||
-            null
-          );
+          const body = request.body as Record<string, string> | undefined;
+          return request.cookies?.refreshToken || body?.refreshToken || null;
         },
       ]),
       secretOrKey: ENV.JWT_REFRESH_SECRET,
@@ -26,9 +38,13 @@ export class JwtRefreshStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: FastifyRequest, payload: any) {
+  validate(
+    req: FastifyRequest,
+    payload: RefreshTokenPayload,
+  ): ValidatedRefreshToken {
     const refreshToken =
-      req.cookies?.refreshToken || (req.body as any)?.refreshToken;
+      req.cookies?.refreshToken ||
+      (req.body as Record<string, string>)?.refreshToken;
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');

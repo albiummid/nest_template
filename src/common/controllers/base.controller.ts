@@ -4,7 +4,7 @@ import { ApiStandardErrors } from '../decorators/api-response.decorator';
 @ApiStandardErrors()
 @Controller()
 export class BaseController {
-  successResponse(result: any, message?: string) {
+  successResponse<T>(result: T, message?: string): SuccessResponse<T> {
     return {
       message,
       result,

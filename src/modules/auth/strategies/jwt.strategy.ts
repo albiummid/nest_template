@@ -5,6 +5,18 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { ENV } from '@/config/env';
 
+interface JwtPayload {
+  sub: number;
+  email: string;
+  roles?: string[];
+}
+
+interface ValidatedUser {
+  id: number;
+  email: string;
+  roles?: string[];
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private authService: AuthService) {
@@ -15,16 +27,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload): Promise<ValidatedUser> {
     const user = await this.authService.getUserById(payload.sub);
     if (!user) throw new UnauthorizedException();
 
-    // You can enrich the payload here
     return {
       id: payload.sub,
       email: payload.email,
       roles: payload.roles,
-      // ... add more fields if needed
     };
   }
 }

@@ -16,24 +16,31 @@ export class AuditSubscriber implements EntitySubscriberInterface {
   constructor() {
     this.logger.log('AuditSubscriber loaded');
   }
-  beforeInsert(event: InsertEvent<any>) {
-    event.entity.created_by = AuthContext.userId;
+
+  beforeInsert(event: InsertEvent<unknown>): void {
+    const entity = event.entity as Record<string, unknown>;
+    if (AuthContext.userId) {
+      entity.created_by = AuthContext.userId;
+    }
   }
 
-  beforeUpdate(event: UpdateEvent<any>) {
-    if (!event?.entity?.updated_by) return;
-    event.entity.updated_by = AuthContext.userId;
+  beforeUpdate(event: UpdateEvent<unknown>): void {
+    const entity = event.entity as Record<string, unknown>;
+    if (!entity.updated_by || !AuthContext.userId) return;
+    entity.updated_by = AuthContext.userId;
   }
 
-  beforeRemove(event: RemoveEvent<any>) {
-    if (!event?.entity?.deleted_by) return;
-    event.entity.deleted_by = AuthContext.userId;
-    event.entity.deleted_at = new Date();
+  beforeRemove(event: RemoveEvent<unknown>): void {
+    const entity = event.entity as Record<string, unknown>;
+    if (!entity.deleted_by || !AuthContext.userId) return;
+    entity.deleted_by = AuthContext.userId;
+    entity.deleted_at = new Date();
   }
 
-  beforeSoftRemove(event: SoftRemoveEvent<any>) {
-    if (!event?.entity?.deleted_by) return;
-    event.entity.deleted_by = AuthContext.userId;
-    event.entity.deleted_at = new Date();
+  beforeSoftRemove(event: SoftRemoveEvent<unknown>): void {
+    const entity = event.entity as Record<string, unknown>;
+    if (!entity.deleted_by || !AuthContext.userId) return;
+    entity.deleted_by = AuthContext.userId;
+    entity.deleted_at = new Date();
   }
 }
