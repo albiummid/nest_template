@@ -12,6 +12,12 @@ export const ENV = cleanEnv(process.env, {
 
   PORT: port({ default: 8000 }),
 
+  // CORS
+  ALLOWED_ORIGINS: str({
+    default:
+      'http://localhost:3000,http://localhost:4200,http://localhost:5173',
+  }),
+
   // Database
   DB_TYPE: str({
     choices: ['mysql', 'postgres', 'sqlite', 'mssql', 'oracle'],
@@ -26,7 +32,7 @@ export const ENV = cleanEnv(process.env, {
   // Auth
   JWT_ACCESS_SECRET: str(),
   JWT_REFRESH_SECRET: str(),
-  JWT_EXPIRES_IN: str({ default: '1h' }),
+  JWT_EXPIRES_IN: str({ default: '15m' }),
 
   // Throttling
   THROTTLE_TTL: num({ default: 60 }), // seconds

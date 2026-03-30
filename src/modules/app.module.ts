@@ -8,6 +8,7 @@ import { LoggerMiddleware } from '../common/middleware/logger.middleware';
 import { ENV } from '../config/env';
 import { DatabaseModule } from '../database/database.module';
 import { AuthModule } from './auth/auth.module';
+import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 
 import { RequestContextMiddleware } from '../common/middleware/request-context.middleware';
@@ -18,13 +19,14 @@ import { RequestContextMiddleware } from '../common/middleware/request-context.m
     WinstonModule.forRoot(winstonConfig),
     ThrottlerModule.forRoot([
       {
-        ttl: ENV.THROTTLE_TTL * 1000,
+        ttl: ENV.THROTTLE_TTL * 1000, // Convert seconds to milliseconds
         limit: ENV.THROTTLE_LIMIT,
       },
     ]),
     DatabaseModule,
     AuthModule,
     UsersModule,
+    HealthModule,
   ],
   providers: [
     {

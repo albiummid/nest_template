@@ -25,11 +25,15 @@ async function bootstrap() {
     new FastifyAdapter({
       logger: true,
       maxParamLength: 5000,
+      bodyLimit: 10 * 1024 * 1024, // 10MB max request body size
     }) as any,
     {
       logger: WinstonModule.createLogger(winstonConfig),
     },
   );
+
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
 
   const config = new DocumentBuilder()
     .setTitle('OfficeDesk API')
@@ -57,12 +61,7 @@ async function bootstrap() {
 
   /* -------------------- Fastify plugins -------------------- */
   await app.register(fastifyCors as any, {
-    origin:
-      ENV.NODE_ENV === 'development'
-        ? true
-        : [
-            /* specify origins */
-          ],
+    origin: ENV.ALLOWED_ORIGINS.split(','),
     credentials: true,
   });
 
@@ -116,6 +115,18 @@ async function bootstrap() {
   logger.log(
     `🔥 API scalar (swagger) running at http://localhost:${ENV.PORT}/reference`,
   );
+
+  /* -------------------- Graceful shutdown -------------------- */
+  const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
+  for (const signal of signals) {
+    process.on(signal, () => {
+      logger.log(`Received ${signal}, starting graceful shutdown...`);
+      void app.close().then(() => {
+        logger.log('Graceful shutdown completed');
+        process.exit(0);
+      });
+    });
+  }
 }
 
-bootstrap();
+void bootstrap();

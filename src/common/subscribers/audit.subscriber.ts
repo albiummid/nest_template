@@ -1,17 +1,20 @@
+import { Logger } from '@nestjs/common';
 import {
+  EntitySubscriberInterface,
   EventSubscriber,
   InsertEvent,
-  EntitySubscriberInterface,
-  UpdateEvent,
-  SoftRemoveEvent,
   RemoveEvent,
+  SoftRemoveEvent,
+  UpdateEvent,
 } from 'typeorm';
 import { AuthContext } from '../context/auth.context';
 
 @EventSubscriber()
 export class AuditSubscriber implements EntitySubscriberInterface {
+  private readonly logger = new Logger(AuditSubscriber.name);
+
   constructor() {
-    console.log('AuditSubscriber loaded');
+    this.logger.log('AuditSubscriber loaded');
   }
   beforeInsert(event: InsertEvent<any>) {
     event.entity.created_by = AuthContext.userId;

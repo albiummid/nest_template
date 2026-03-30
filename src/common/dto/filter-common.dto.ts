@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, Max, Min } from 'class-validator';
 import { RowStatus, SortOrder } from '../utils/enums';
 import { enumValuesToArray } from '../utils/util/util';
 import { IsNumeric } from '../utils/validators/is-number-string.validator';
@@ -8,13 +8,16 @@ import { IsValueIn } from '../utils/validators/is-value-in.validator';
 export class FilterCommonDto {
   @IsOptional()
   @IsNumeric()
-  @ApiPropertyOptional({ type: String })
-  page: number;
+  @Min(1)
+  @ApiPropertyOptional({ type: String, default: 1 })
+  page: number = 1;
 
   @IsOptional()
   @IsNumeric()
-  @ApiPropertyOptional({ type: String })
-  limit: number;
+  @Min(1)
+  @Max(100)
+  @ApiPropertyOptional({ type: String, default: 20 })
+  limit: number = 20;
 
   @IsNumeric()
   @IsOptional()
